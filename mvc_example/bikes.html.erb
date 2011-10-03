@@ -1,0 +1,111 @@
+<%# render the dynamically uploaded banners (grabbags) %>
+<%= render :partial => 'rolling_banner', :grabbags => @grabbags %>
+
+<%# Basically create a header with links %>
+<div class="min_height_50">
+  <div id="preownedbikeinventory_header" class="grid_11">
+  </div>
+  <div id="bike_sort" class="grid_5">
+    <%- if @sort_order.eql?("date") -%>
+        <b><%= sort_link "#{@sort_dir} Date", :date %></b>
+    <%- else -%>
+        <%= sort_link 'Date', :date %>
+    <%- end -%>
+    |
+    <%- if @sort_order.eql?("price") -%>
+        <b> <%= sort_link "#{@sort_dir} Price", :price %></b>
+    <%- else -%>
+        <%= sort_link 'Price', :price %>
+    <%- end -%>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<%# render the bikes for sale, dynamically, if this site ever gets big I may cache this  %>
+<div id="all_bikes">
+  <%- @bikes.each do |bike| %>
+      <div class="bike_listing bike min_height_200 v_margin_5 opac_back_white_20 " onclick="location.href='/main/show_bike/<%= bike.id %>'; showdiv('hidden-div', 'inline');">
+
+        <div class="grid_4">
+
+          <span class="bike_status"><%= Bike::Status[bike.status] %></span>
+          <%- unless bike.assets.nil? || bike.assets.size.eql?(0) -%>
+              <div class='bikes_slideshow bike_pict min_height_200'>
+                <%- picts = bike.assets -%>
+                <%= image_tag picts[0].data.url(:bike_thumb), :height => 150, :width => 200 %>
+
+              </div>
+				<span class='min_height_50 v_margin_5_10'>
+					Click to See More!!
+				</span>
+          <%- else -%>
+              <%= link_to "<br /><br />PICTURES COMING SOON", {:action => "show_bike", :id => bike.id} %>
+          <%- end -%>
+        </div>
+        <div class="bike_info grid_8 min_height_150">
+          <span class="bike_title"><%= bike.year %> <%= bike.make %> <%= bike.model %></span><br/>
+          <%= bike.description %>
+          <br/><br/><br/>
+
+          <div id="hidden-div">&nbsp</div>
+        </div>
+        <div class="min_height_150">
+          <div class="pricing">
+            <span class="actual_price">$<%= bike.price %></span><span class="more_details">*</span><br/>
+            <span class="more_details">*tax, title, license extra</span>
+          </div>
+          <br/>
+
+          <%# make the div clickable %>
+          <div class="bike_details min_height_150">
+	        		<span class="more_details">
+	            		stock #<%= bike.stock.to_s unless bike.stock.nil? %><br/>
+                        vin #<br/>
+	                	Odometer <%= bike.mileage.to_s %> miles<br/>
+                      <%= link_to image_tag ("/images/mail_32.png"),
+                                            :controller => 'main',
+                                            :action => 'request_info',
+                                            :type => 'bike_inquiry', :info => "Tell me about the " + bike.make.to_s + " " + bike.model.to_s + " " + bike.year.to_s + "...."
+                      %>	       			</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="clear"></div>
+
+  <%- end %>
+</div>
+
+<div class="clear"></div>
+
+<%= will_paginate @bikes %>
+
+<script type="text/javascript">
+    //make the banner slide
+    $j(document).ready(function() {
+        $j('.slideshow').cycle({
+            speed:  2000,
+            timeout: 6000,
+            <% a = rand(2) %>
+            fx:'fade' // choose your transition type, ex: fade, scrollUp, shuffle, etc...
+
+        });
+    });
+
+    $j(document).ready(function() {
+        $j('.bikes_slideshow').cycle({
+            speed:  1000,
+            timeout: 3000,
+            prev: '.bikes_slideshow',
+            <% a = rand(2) %>
+            <% if a.eql?(0) %>
+            //make the transition random... just for fun
+            fx:'fade' // choose your transition type, ex: fade, scrollUp, shuffle, etc...
+            <% else %>
+            fx:'shuffle' // choose your transition type, ex: fade, scrollUp, shuffle, etc...
+            <% end %>
+        });
+    });
+
+</script>
